@@ -1,0 +1,21 @@
+ int romanToInt(char* s) {
+    int sum = 0, currentValue = 0, prevValue = 0;
+    int values[256] = {0};
+    values['I'] = 1; values['V'] = 5; values['X'] = 10; values['L'] = 50;
+    values['C'] = 100; values['D'] = 500; values['M'] = 1000;
+
+    prevValue = values[*s++];
+    while (*s) {
+        currentValue = values[*s++];
+        if (currentValue > prevValue)
+            sum -= prevValue;
+        else
+            sum += prevValue;
+        prevValue = currentValue;
+    }
+    sum += prevValue;
+    return sum;
+  }  
+    
+    
+```
