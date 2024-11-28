@@ -1,0 +1,80 @@
+typedef struct {
+    char* key;
+    int count;
+    UT_hash_handle hh;
+} wordcout_t;
+
+void add_word(wordcout_t** wc, char* key) {
+    wordcout_t* existing_wc;
+    HASH_FIND_STR(*wc, key, existing_wc);
+    if (existing_wc == NULL) {
+        wordcout_t* new_wc = malloc(sizeof(wordcout_t));
+        new_wc->key = strdup(key);
+        new_wc->count = 0;
+        HASH_ADD_STR(*wc, key, new_wc);
+        existing_wc = new_wc;
+    }
+    existing_wc->count++;
+}
+
+int* entry(wordcout_t** wc, wordcout_t** existing_wc, char* key) {
+    HASH_FIND_STR(*wc, key, *existing_wc);
+    if (*existing_wc == NULL) {
+        wordcout_t* new_wc = malloc(sizeof(wordcout_t));
+        new_wc->key = strdup(key);
+        new_wc->count = 0;
+        HASH_ADD_STR(*wc, key, new_wc);
+        *existing_wc = new_wc;
+    }
+    return &(*existing_wc)->count;
+}
+
+void copy_hashmap(wordcout_t** des, wordcout_t** src) {
+    wordcout_t* wc, *p, *tmp;
+    HASH_ITER(hh, *src, p, tmp) {
+        wc = malloc(sizeof(wordcout_t));
+        wc->key = strdup(p->key);
+        wc->count = p->count;
+        HASH_ADD_STR(*des, key, wc);  
+    }
+}
+
+int* findSubstring(char* s, char** words, int wordsSize, int* returnSize) {
+    wordcout_t  *p, *tmp, *need = NULL, *orig = NULL;
+
+    for (int i = 0; i < wordsSize; i++) add_word(&orig, words[i]);
+
+    int n = strlen(s);
+    int m = wordsSize;
+    int w = strlen(words[0]);
+    int total_words_len = m * w;
+    
+    int* result = malloc(sizeof(int) * n);
+    int result_count = 0;
+
+    char word[31] = {0}, prev[31] = {0};
+    for (int i = 0; i < w; i++) {
+        copy_hashmap(&need, &orig);  
+        int valid = 0;
+        for(int j = i; j <= n - w; j += w) {
+            strncpy(word, s + j, w);
+            word[w] = '\0';
+            HASH_FIND_STR(need, word, tmp);
+            if (tmp && tmp->count > 0) valid += 1;
+
+            (*entry(&need, &tmp, word)) -= 1;
+            if (j >= total_words_len) {
+                int idx = j - total_words_len;
+                strncpy(prev, s + idx, w);
+                prev[w] = '\0';
+                int* num = entry(&need, &tmp, prev);
+                *num += 1;
+                if (*num > 0) { valid--;}
+            }
+            if (valid == m) {result[result_count++] = j + w - total_words_len;}
+        }
+        HASH_CLEAR(hh, need);
+    }
+    *returnSize = result_count;
+    return result;
+}
