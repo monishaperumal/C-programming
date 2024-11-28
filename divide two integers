@@ -1,0 +1,8 @@
+int divide(int dividend, int divisor) {
+    if (dividend == INT_MIN && divisor == -1) {
+        return INT_MAX; // Return the maximum positive integer
+    }
+    long long int quotient = dividend/divisor;
+    return (int)quotient;
+}
+```
